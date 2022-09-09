@@ -29,7 +29,6 @@ class AdjacentBlocks {
         public up: AdjacentBlock,
     ) {
     }
-
 }
 
 // These will likely be configuration options at a later date, but for now they are hard-coded.
@@ -51,21 +50,21 @@ const damagePerBlockDestroyed: boolean = true;
 const onlyOnSneak: boolean = false;
 
 class Lumberjack {
-    private event: BlockDestroyEvent;
     private carriedItem: ItemStack;
 
     constructor(
+        private event: BlockDestroyEvent
     ) {
+        this.event = event;
+        this.carriedItem = this.event.player.getCarriedItem();
     }
 
-    public chop = (event: BlockDestroyEvent) => {
-        this.event = event;
-        if (onlyOnSneak && this.event.player.isSneaking() === false) {
-            return;
-        }
-        this.carriedItem = this.event.player.getCarriedItem();
+    public chop = () => {
         // Weapon used must be an axe
         if (behaviourMode === 0 && this.carriedItem.getName().includes('axe') === false) {
+            return;
+        }
+        if (onlyOnSneak && this.event.player.isSneaking() === false) {
             return;
         }
         // Block destroyed must be a log
@@ -190,10 +189,8 @@ class Lumberjack {
     }
 }
 
-const lumberjack = new Lumberjack()
-
 events.serverOpen.on(()=>{
     logger('Enabled');
 });
 
-events.blockDestroy.on((logs) => lumberjack.chop(logs))
+events.blockDestroy.on((logs) => new Lumberjack(logs).chop())
